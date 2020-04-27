@@ -2,7 +2,7 @@
 
 module.exports = {
   url: 'https://hmarui66.github.io/blog',
-  pathPrefix: '/blog',
+  pathPrefix: '/',
   title: 'Blog by hmarui66',
   subtitle: 'My beautiful life',
   copyright: '© All rights reserved.',
