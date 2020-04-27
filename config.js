@@ -1,10 +1,10 @@
 'use strict';
 
 module.exports = {
-  url: '',
-  pathPrefix: '/',
+  url: 'https://hmarui66.github.io/blog',
+  pathPrefix: '/blog',
   title: 'Blog by hmarui66',
-  subtitle: '???????????',
+  subtitle: 'My beautiful life',
   copyright: '© All rights reserved.',
   disqusShortname: '',
   postsPerPage: 4,
