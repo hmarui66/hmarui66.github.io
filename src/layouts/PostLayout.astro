@@ -13,6 +13,10 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
   month: 'long',
   day: 'numeric'
 });
+
+const postUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const tweetText = encodeURIComponent(title);
+const tweetUrl = `https://x.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(postUrl)}`;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -23,6 +27,11 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
     </header>
     <div class="post-content">
       <slot />
+    </div>
+    <div class="post-share">
+      <a href={tweetUrl} target="_blank" rel="noopener noreferrer" class="share-button">
+        Xでシェア
+      </a>
     </div>
   </article>
 </BaseLayout>
@@ -59,5 +68,25 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
   .post-content :global(img) {
     margin: 1.5rem auto;
     border-radius: 5px;
+  }
+
+  .post-share {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .share-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .share-button:hover {
+    color: var(--link-color);
+    text-decoration: underline;
   }
 </style>
