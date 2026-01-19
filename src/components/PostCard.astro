@@ -1,0 +1,79 @@
+---
+interface Props {
+  title: string;
+  slug: string;
+  date: Date;
+  description?: string;
+}
+
+const { title, slug, date, description } = Astro.props;
+const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<article class="post-card">
+  <a href={`/posts/${slug}`} class="post-link">
+    <h2>{title}</h2>
+    <time datetime={date.toISOString()}>{formattedDate}</time>
+    {description && <p class="description">{description}</p>}
+  </a>
+</article>
+
+<style>
+  .post-card {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .post-card:last-child {
+    border-bottom: none;
+  }
+
+  .post-link {
+    display: block;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: transform 0.2s ease;
+  }
+
+  .post-link:hover {
+    text-decoration: none;
+  }
+
+  .post-link:hover h2 {
+    color: var(--link-color);
+  }
+
+  .post-link h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s ease;
+  }
+
+  .post-link time {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    .post-card {
+      padding: 1rem 0;
+    }
+
+    .post-link h2 {
+      font-size: 1.25rem;
+    }
+  }
+</style>

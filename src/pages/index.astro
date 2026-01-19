@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="hmarui66's blog">
+  <section class="posts">
+    <h2>Recent Posts</h2>
+    {sortedPosts.length === 0 ? (
+      <p class="no-posts">記事はまだなし。</p>
+    ) : (
+      sortedPosts.map((post) => (
+        <PostCard
+          title={post.data.title}
+          slug={post.slug}
+          date={post.data.date}
+          description={post.data.description}
+        />
+      ))
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .posts h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+
+  .no-posts {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+</style>

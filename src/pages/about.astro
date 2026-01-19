@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About - hmarui66" description="About hmarui66">
+  <article class="about">
+    <h1>About</h1>
+
+    <section>
+      <h2>興味</h2>
+      <p>DB関連技術</p>
+    </section>
+
+    <section>
+      <h2>Links</h2>
+      <ul>
+        <li>X: <a href="https://x.com/hmarui66" target="_blank" rel="noopener noreferrer">https://x.com/hmarui66</a></li>
+        <li>Bluesky: <a href="https://bsky.app/profile/hmarui66.bsky.social" target="_blank" rel="noopener noreferrer">https://bsky.app/profile/hmarui66.bsky.social</a></li>
+        <li>sizu.me: <a href="https://sizu.me/hmarui66" target="_blank" rel="noopener noreferrer">https://sizu.me/hmarui66</a></li>
+        <li>Zenn: <a href="https://zenn.dev/hmarui66" target="_blank" rel="noopener noreferrer">https://zenn.dev/hmarui66</a></li>
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .about h1 {
+    margin-bottom: 2rem;
+  }
+
+  .about section {
+    margin-bottom: 2.5rem;
+  }
+
+  .about section:last-child {
+    margin-bottom: 0;
+  }
+
+  .about h2 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .about ul {
+    list-style-position: inside;
+  }
+
+  .about li {
+    margin-bottom: 0.5rem;
+  }
+</style>
