@@ -2,7 +2,7 @@
 title: "組み込みDBの速さを体感する"
 date: 2025-12-28
 description: "VKVを使った組み込みデータベースのパフォーマンス検証"
-tags: ["database", "performance"]
+tags: ["database", "performance", "benchmark"]
 ---
 
 ここ数日、[VKV](https://github.com/hadashiA/VKV) という readonly & 組み込み用途の KVS を動かして遊んでいる。
