@@ -30,15 +30,15 @@ export async function getStaticPaths() {
 const { tag, posts } = Astro.props;
 ---
 
-<BaseLayout title={`タグ: ${tag} - hmarui66's blog`}>
+<BaseLayout title={`Tag: ${tag} - hmarui66's blog`}>
   <section class="tag-posts">
     <div class="tag-header">
       <h1>
-        <span class="tag-label">タグ:</span>
+        <span class="tag-label">Tag:</span>
         <span class="tag-name">#{tag}</span>
       </h1>
-      <p class="post-count">{posts.length}件の記事</p>
-      <a href="/tags" class="back-link">← すべてのタグ</a>
+      <p class="post-count">{posts.length} {posts.length === 1 ? 'post' : 'posts'}</p>
+      <a href="/tags" class="back-link">← All tags</a>
     </div>
 
     <div class="posts-list">

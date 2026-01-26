@@ -9,7 +9,7 @@ const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.
 
 <BaseLayout title="hmarui66's blog">
   <section class="posts">
-    <h2>Recent Posts</h2>
+    <h2>Posts</h2>
     {sortedPosts.length === 0 ? (
       <p class="no-posts">記事はまだなし。</p>
     ) : (
