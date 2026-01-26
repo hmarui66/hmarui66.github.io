@@ -2,7 +2,7 @@
 title: "CREATE INDEX はなぜ速いのか(PostgreSQLで確認)"
 date: 2023-04-02
 description: "PostgreSQLで大量データ投入時にINDEX作成を後回しにすると速い理由をソースコードから調査"
-tags: ["postgresql", "database"]
+tags: ["postgresql", "database", "btree", "performance"]
 ---
 
 PostgreSQL に大量データを投入する際、INDEX 作成を後回しにして高速化するというテクニックが[PostgreSQL ドキュメント: 14.4. データベースへのデータ投入](https://www.postgresql.jp/document/14/html/populate.html)で紹介されている。

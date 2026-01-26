@@ -4,9 +4,10 @@ interface Props {
   slug: string;
   date: Date;
   description?: string;
+  tags?: string[];
 }
 
-const { title, slug, date, description } = Astro.props;
+const { title, slug, date, description, tags } = Astro.props;
 const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
   year: 'numeric',
   month: 'long',
@@ -20,6 +21,13 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
     <time datetime={date.toISOString()}>{formattedDate}</time>
     {description && <p class="description">{description}</p>}
   </a>
+  {tags && tags.length > 0 && (
+    <div class="tags">
+      {tags.map((tag) => (
+        <a href={`/tags/${tag}`} class="tag">#{tag}</a>
+      ))}
+    </div>
+  )}
 </article>
 
 <style>
@@ -65,6 +73,29 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
     line-height: 1.6;
     margin-top: 0.75rem;
     margin-bottom: 0;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-decoration: none;
+    background-color: var(--bg-secondary, #f5f5f5);
+    border-radius: 3px;
+    transition: all 0.2s ease;
+  }
+
+  .tag:hover {
+    color: var(--link-color);
+    background-color: var(--border-color);
   }
 
   @media (max-width: 768px) {

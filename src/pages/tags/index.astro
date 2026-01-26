@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const allPosts = await getCollection('posts');
+
+// タグごとの記事数を集計
+const tagCounts = allPosts.reduce((acc, post) => {
+  if (post.data.tags) {
+    post.data.tags.forEach((tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+  }
+  return acc;
+}, {} as Record<string, number>);
+
+// タグを記事数の降順でソート
+const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout title="Tags - hmarui66's blog">
+  <section class="tags-page">
+    <h1>Tags</h1>
+    {sortedTags.length === 0 ? (
+      <p class="no-tags">タグはまだありません。</p>
+    ) : (
+      <div class="tags-grid">
+        {sortedTags.map(([tag, count]) => (
+          <a href={`/tags/${tag}`} class="tag-item">
+            <span class="tag-name">#{tag}</span>
+            <span class="tag-count">{count}件</span>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .tags-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .tags-page h1 {
+    margin-bottom: 2rem;
+    font-size: 2rem;
+  }
+
+  .no-tags {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .tag-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    text-decoration: none;
+    background-color: var(--bg-secondary, #f5f5f5);
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+  }
+
+  .tag-item:hover {
+    border-color: var(--link-color);
+    transform: translateY(-2px);
+  }
+
+  .tag-name {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .tag-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .tags-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tags-page h1 {
+      font-size: 1.5rem;
+    }
+  }
+</style>

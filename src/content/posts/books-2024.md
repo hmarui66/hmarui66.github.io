@@ -2,7 +2,7 @@
 title: "2024年に読んだ本"
 date: 2024-12-29
 description: "2024年に読んだ技術書・論文の振り返り"
-tags: ["books", "reading"]
+tags: ["reading"]
 ---
 
 去年に引き続き今年もざっと振り返ってみる。

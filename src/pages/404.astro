@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 - hmarui66's blog">
+  <div class="not-found">
+    <h1>404</h1>
+    <p>ページが見つかりません</p>
+    <nav class="links">
+      <a href="/">Home</a>
+      <a href="/tags">Tags</a>
+    </nav>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+
+  .not-found h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .not-found p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+  }
+
+  .links {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+
+  .links a {
+    color: var(--link-color);
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    text-decoration: underline;
+  }
+</style>
