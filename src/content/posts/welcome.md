@@ -2,7 +2,7 @@
 title: "ブログを再開"
 date: 2026-01-19
 description: "古いGatsbyブログを最新のAstroに移行し、新しくブログを再開した。"
-tags: ["essay", "blog"]
+tags: ["essay"]
 ---
 
 ブログをリニューアルして再開してみる。
