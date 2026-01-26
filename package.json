@@ -14,7 +14,12 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^4.0.0",
     "astro": "^5.0.5",
-    "typescript": "^5.7.3"
+    "mermaid": "^11.12.2",
+    "remark-github-alerts": "^0.1.1",
+    "typescript": "^5.7.3",
+    "unist-util-visit": "^5.1.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "playwright": "^1.58.0"
+  }
 }

@@ -142,3 +142,60 @@ th {
   background-color: var(--bg-secondary);
   font-weight: 600;
 }
+
+/* GitHub Alerts */
+.markdown-alert {
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid;
+  border-radius: 4px;
+}
+
+.markdown-alert > p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-alert-note {
+  border-left-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme='dark'] .markdown-alert-note {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.markdown-alert-tip {
+  border-left-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+[data-theme='dark'] .markdown-alert-tip {
+  background-color: rgba(16, 185, 129, 0.15);
+}
+
+.markdown-alert-important {
+  border-left-color: #8b5cf6;
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+[data-theme='dark'] .markdown-alert-important {
+  background-color: rgba(139, 92, 246, 0.15);
+}
+
+.markdown-alert-warning {
+  border-left-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+[data-theme='dark'] .markdown-alert-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+}
+
+.markdown-alert-caution {
+  border-left-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+[data-theme='dark'] .markdown-alert-caution {
+  background-color: rgba(239, 68, 68, 0.15);
+}

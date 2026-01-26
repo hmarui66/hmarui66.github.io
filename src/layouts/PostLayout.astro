@@ -34,6 +34,30 @@ const tweetUrl = `https://x.com/intent/tweet?text=${tweetText}&url=${encodeURICo
       </a>
     </div>
   </article>
+
+  <script>
+    import mermaid from 'mermaid';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: theme
+      });
+      mermaid.run();
+    });
+
+    // Re-run mermaid when theme changes
+    const observer = new MutationObserver(() => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+      mermaid.initialize({ theme: theme });
+      mermaid.run();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+  </script>
 </BaseLayout>
 
 <style>
