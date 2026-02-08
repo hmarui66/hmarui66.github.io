@@ -383,8 +383,8 @@ SkipList にしたところ Vec に比べて大幅に性能が落ちた。3M key
 xychart-beta
     title "書き込み性能の比較 (3M keys)"
     x-axis ["RocksDB default", "RocksDB (WAL無効)", "Vec log", "SkipList log"]
-    y-axis "Operations/sec" 0 --> 4500000
-    bar [190596, 635158, 4079638, 635000]
+    y-axis "K ops/sec" 0 --> 4500
+    bar [191, 635, 4080, 635]
 ```
 
 > [!WARNING]
