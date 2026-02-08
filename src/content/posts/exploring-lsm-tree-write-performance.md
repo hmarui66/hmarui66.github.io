@@ -377,6 +377,19 @@ SkipList にしたところ Vec に比べて大幅に性能が落ちた。3M key
 
 ## まとめ
 
+今回試したシングルスレッドでの 3M keys の書き込みにおける各実装の書き込み性能(ops/sec)を以下にまとめる。
+
+```mermaid
+xychart-beta
+    title "書き込み性能の比較 (3M keys)"
+    x-axis ["RocksDB default", "RocksDB (WAL無効)", "Vec log", "SkipList log"]
+    y-axis "Operations/sec" 0 --> 4500000
+    bar [190596, 635158, 4079638, 635000]
+```
+
+> [!WARNING]
+> RocksDB と簡易実装では機能面（WAL、Compaction、トランザクション管理など）が大きく異なるため、apples-to-apples の比較ではない。あくまで書き込みパスの各要素が性能にどの程度寄与するかを把握するための参考値として並べている。
+
 LSM-Tree の書き込み性能は主に MemTable で採用しているデータ構造で決まることが分かった。
 
 今回の簡易的な実装では WAL 書き込みは省略したが、単なる Vec ベースのバッファ実装であればボトルネックにはならないと考えられるが、毎回フラッシュしたり書き込みごとに耐久性を持たせるために fsync すると大幅に性能は落ちる。RocksDB は利用側にこのあたりの制御を委ねる形となっている。
