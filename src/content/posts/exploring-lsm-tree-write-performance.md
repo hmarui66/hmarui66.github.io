@@ -381,9 +381,9 @@ SkipList にしたところ Vec に比べて大幅に性能が落ちた。3M key
 
 ```mermaid
 xychart-beta
-    title "書き込み性能の比較 (3M keys)"
+    title "書き込み性能の比較 (K ops/sec)"
     x-axis ["RocksDB default", "RocksDB (WAL無効)", "Vec log", "SkipList log"]
-    y-axis "K ops/sec" 0 --> 4500
+    y-axis "" 0 --> 4500
     bar [191, 635, 4080, 635]
 ```
 
