@@ -33,7 +33,7 @@ aws s3api put-object --bucket my-bucket --key my-object --body my-file --if-none
 
 既に同じキーのオブジェクトが存在していた場合は書き込みが失敗し `412 Precondition Failed` が返される。
 
-## WAL の実装
+## WAL のストレージ層の構築
 
 サーバーがクラッシュした場合に状態を復元するためには、WAL の書き込みに耐久性を持たせつつ、WAL の適用順序を制御する必要がある。
 
@@ -353,7 +353,7 @@ type WAL struct {
 }
 ```
 
-WAL 本体のデータは `sync.Map` で保持する。ただし `sync.Map` が安全にするのは Load/Store という map 操作だけで、値である `[]byte` 自体の可変性までは面倒を見てくれない。今回は `getEntry` で返す `[]byte` は不変であることを前提としているで、気にしないで済む。
+WAL 本体のデータは `sync.Map` で保持する。ただし `sync.Map` が安全にするのは Load/Store という map 操作だけで、値である `[]byte` 自体の可変性までは面倒をみない。今回は `getEntry` で返す `[]byte` は不変であることを前提としているため、気にしないで済む。
 
 ```go
 func (w *WAL) Read(ctx context.Context) ([][]byte, error) {
