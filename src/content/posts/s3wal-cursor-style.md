@@ -1,6 +1,6 @@
 ---
 title: "Cursor Origin スタイルで S3 に WAL のストレージ層を構築する"
-date: 2026-08-26
+date: 2026-08-29
 description: "S3 の条件付き書き込みを活用して WAL のストレージ層を構築し、キャッシュや Request coalescing を足していく過程で踏んだ並行バグを記録する"
 tags: ["s3", "wal", "database"]
 ---
