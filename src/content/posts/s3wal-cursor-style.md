@@ -60,43 +60,9 @@ aws s3api put-object --bucket my-bucket --key my-object --body my-file --if-none
 
 ### Go での実装例
 
-Go での実装例は以下のようになる。
+上記の流れをそのまま実装すると `Append` の中心部分は以下のようになる(完全な実装は [simple/wal.go](https://github.com/hmarui66/s3wal-cursor-style/blob/main/simple/wal.go) を参照)。
 
 ```go
-package simple
-
-import (
-	"bytes"
-	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	json "encoding/json/v2"
-	"errors"
-	"io"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
-)
-
-// WAL は S3 上の追記専用ログ。
-//
-// エントリ本体は "<prefix>/<hash>.wal" に置く。キーがコンテンツハッシュなので
-// 書き込み者同士でキーが衝突しない。順序は "<prefix>/wal-index" だけが持ち、
-// これを条件付き書き込みで更新する。競合点を小さなインデックスに寄せることで、
-// 大きくなりうる本体の書き込み側では競合が起きない。
-type WAL struct {
-	Client *s3.Client
-	Bucket string
-	Prefix string
-}
-
-// index は wal-index の中身。エントリのハッシュを適用順に並べたもの。
-type index struct {
-	Entries []string `json:"entries"`
-}
-
-// Append は data を1件追記し、そのコンテンツハッシュを返す。
 func (w *WAL) Append(ctx context.Context, data []byte) (string, error) {
 	hash := contentHash(data)
 
@@ -117,8 +83,7 @@ func (w *WAL) Append(ctx context.Context, data []byte) (string, error) {
 			return "", err
 		}
 
-		// 5. 自分のハッシュを足す。ログが記録するのは出現回数なので、
-		//    同じハッシュが既にあっても足す。
+		// 5. 自分のハッシュを足す。
 		idx.Entries = append(idx.Entries, hash)
 		body, err := json.Marshal(idx)
 		if err != nil {
@@ -132,12 +97,9 @@ func (w *WAL) Append(ctx context.Context, data []byte) (string, error) {
 			Body:   bytes.NewReader(body),
 		}
 		if etag == "" {
-			// まだ無い。「まだ無ければ作る」で書く。
-			// 未作成のオブジェクトには ETag が無いので If-Match では作れない。
-			put.IfNoneMatch = aws.String("*")
+			put.IfNoneMatch = aws.String("*") // まだ無いので作る
 		} else {
-			// 既にある。「4 で読んだときのままなら書く」で書く。
-			put.IfMatch = aws.String(etag)
+			put.IfMatch = aws.String(etag) // 4 で読んだときのままなら書く
 		}
 
 		_, err = w.Client.PutObject(ctx, put)
@@ -150,91 +112,6 @@ func (w *WAL) Append(ctx context.Context, data []byte) (string, error) {
 		// 412。誰かが先に作った、あるいは先に更新した。4 からやり直す。
 	}
 }
-
-// Read はログの記録順に全エントリを返す。
-func (w *WAL) Read(ctx context.Context) ([][]byte, error) {
-	idx, _, err := w.getIndex(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	entries := make([][]byte, 0, len(idx.Entries))
-	for _, hash := range idx.Entries {
-		body, err := w.getObject(ctx, w.entryKey(hash))
-		if err != nil {
-			return nil, err
-		}
-		entries = append(entries, body)
-	}
-	return entries, nil
-}
-
-// getIndex はインデックスとその ETag を返す。未作成なら「空のインデックス +
-// 空の ETag」を返し、書き手はそれを見て If-None-Match に切り替える。
-func (w *WAL) getIndex(ctx context.Context) (index, string, error) {
-	res, err := w.Client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(w.Bucket),
-		Key:    aws.String(w.indexKey()),
-	})
-	if err != nil {
-		if isNoSuchKey(err) {
-			return index{}, "", nil
-		}
-		return index{}, "", err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return index{}, "", err
-	}
-	var idx index
-	if err := json.Unmarshal(body, &idx); err != nil {
-		return index{}, "", err
-	}
-	return idx, aws.ToString(res.ETag), nil
-}
-
-func (w *WAL) getObject(ctx context.Context, key string) ([]byte, error) {
-	res, err := w.Client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(w.Bucket),
-		Key:    aws.String(key),
-	})
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	return io.ReadAll(res.Body)
-}
-
-func (w *WAL) indexKey() string            { return w.Prefix + "/wal-index" }
-func (w *WAL) entryKey(hash string) string { return w.Prefix + "/" + hash + ".wal" }
-
-func contentHash(data []byte) string {
-	sum := sha256.Sum256(data)
-	return hex.EncodeToString(sum[:])
-}
-
-// s3ErrorIs は S3 の API エラーコードで判定する。エラー文の文字列マッチは使わない。
-// SDK のエラー文にはリクエストIDが必ず入るので、無関係な失敗の ID が "412" を
-// 含むだけで precondition failure と誤判定する。
-func s3ErrorIs(err error, code string, status int) bool {
-	var apiErr smithy.APIError
-	if errors.As(err, &apiErr) {
-		// コードが取れたならそれだけで決める。ここで HTTP ステータスに
-		// フォールバックすると、NoSuchBucket のような別種の 404 まで
-		// NoSuchKey として通ってしまい、バケットの指定ミスが「wal-index が
-		// まだ無い」に化けて空のログとして読めてしまう。
-		return apiErr.ErrorCode() == code
-	}
-	// コードが得られない応答(本文を返さない実装など)のときだけ、
-	// HTTP ステータスで判定する。
-	var statusErr interface{ HTTPStatusCode() int }
-	return errors.As(err, &statusErr) && statusErr.HTTPStatusCode() == status
-}
-
-func isPreconditionFailed(err error) bool { return s3ErrorIs(err, "PreconditionFailed", 412) }
-func isNoSuchKey(err error) bool          { return s3ErrorIs(err, "NoSuchKey", 404) }
 ```
 
 状態を持たずに毎回 S3 にフルでアクセスすることで、並行性の担保を S3 の条件付き書き込みのみで実現している。
@@ -275,54 +152,25 @@ type WAL struct {
 
 
 ```go
-func (w *WAL) getIndex(ctx context.Context) (index, string, error) {
-	// キャッシュを安全に読むために RLock を使う
-	w.cacheMu.RLock()
-	cachedIdx, cachedETag := w.cacheIndex, w.cacheETag
-	w.cacheMu.RUnlock()
-
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(w.Bucket),
-		Key:    aws.String(w.indexKey()),
+res, err := w.Client.GetObject(ctx, input) // input.IfNoneMatch にキャッシュのETagを指定済み
+if err != nil {
+	if isNotModified(err) {
+		// bugfix(後述): cachedIdx をそのまま返すと、複数の呼び出し元が
+		// 同じキャッシュのバッキング配列を受け取ることになる。
+		return index{Entries: slices.Clone(cachedIdx.Entries)}, cachedETag, nil
 	}
-	// キャッシュがあれば If-None-Match ヘッダを付ける
-	if cachedETag != "" {
-		input.IfNoneMatch = aws.String(cachedETag)
-	}
-
-	res, err := w.Client.GetObject(ctx, input)
-	if err != nil {
-		if isNotModified(err) {
-			// `304 Not Modified` が返ってきた場合はキャッシュを使い回す。
-			// bugfix(後述): ここで cachedIdx をそのまま返すと、複数の呼び出し元が
-			// 同じキャッシュのバッキング配列を受け取ることになる。
-			return index{Entries: slices.Clone(cachedIdx.Entries)}, cachedETag, nil
-		}
-		if isNoSuchKey(err) {
-			return index{}, "", nil
-		}
-		return index{}, "", err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return index{}, "", err
-	}
-	var idx index
-	if err := json.Unmarshal(body, &idx); err != nil {
-		return index{}, "", err
-	}
-	etag := aws.ToString(res.ETag)
-	// 新しいインデックスを取得した場合はキャッシュを更新する
-	w.setCache(idx, etag)
-	return idx, etag, nil
+	// ...(NoSuchKey などのハンドリングは省略)
 }
+// ...(GET成功時のJSONパースは省略)
+w.setCache(idx, etag)
+return idx, etag, nil
+```
 
+```go
 func (w *WAL) setCache(idx index, etag string) {
-	// キャッシュを更新する際は Lock する
 	w.cacheMu.Lock()
-	// bugfix(後述): slices.Clone を使ってスライスのコピーを作ることで、キャッシュのスライスが外部から変更されないようにする
+	// bugfix(後述): 引数の idx.Entries をそのまま保持すると、呼び出し元が
+	// 後で slice を変更したときにキャッシュ側が壊れる。
 	w.cacheIndex, w.cacheETag = index{Entries: slices.Clone(idx.Entries)}, etag
 	w.cacheMu.Unlock()
 }
@@ -356,45 +204,12 @@ type WAL struct {
 WAL 本体のデータは `sync.Map` で保持する。ただし `sync.Map` が安全にするのは Load/Store という map 操作だけで、値である `[]byte` 自体の可変性までは面倒をみない。今回は `getEntry` で返す `[]byte` は不変であることを前提としているため、気にしないで済む。
 
 ```go
-func (w *WAL) Read(ctx context.Context) ([][]byte, error) {
-	idx, _, err := w.getIndex(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	entries := make([][]byte, 0, len(idx.Entries))
-	for _, hash := range idx.Entries {
-		body, err := w.getEntry(ctx, hash)
-		if err != nil {
-			return nil, err
-		}
-		entries = append(entries, body)
-	}
-	return entries, nil
-}
-
 // getEntry はエントリ本体を返す。内容不変なので S3 から取るのは初回だけ。
 func (w *WAL) getEntry(ctx context.Context, hash string) ([]byte, error) {
 	if body, ok := w.entries.Load(hash); ok {
 		return body.([]byte), nil
 	}
-
-	res, err := w.Client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(w.Bucket),
-		Key:    aws.String(w.entryKey(hash)),
-	})
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	w.entries.Store(hash, body)
-
-	return body, nil
+	// ...(キャッシュに無ければ GetObject して Store するだけ)
 }
 ```
 
@@ -410,33 +225,14 @@ func (w *WAL) getEntry(ctx context.Context, hash string) ([]byte, error) {
 
 [Request coalescing with Go singleflight](https://rednafi.com/go/request-coalescing/) という記事が参考になる。
 
-以下、記事に載っているサンプルコードを一部改変して転載。
+以下、記事に載っているサンプルコードを一部改変して転載。同一 key の処理が同時に複数走った場合、最初の1回だけ `g.Do` のブロックが実行され、残りは結果を待つだけになる。
 
 ```go
-import "golang.org/x/sync/singleflight"
-
 var g singleflight.Group
 
-func (s *Store) Get(ctx context.Context, key string) (string, error) {
-	if v, ok := s.cache.Get(key); ok {
-		// キャッシュがあればそれを返す
-		return v, nil
-	}
-	// 同一の key の処理を束ねる
-	v, err, _ := g.Do(key, func() (any, error) {
-		// 特定の key の処理が同時に複数走った場合、最初の1回だけこのブロックが実行され、残りは待機する。
-		val, err := s.fetch(ctx, key)
-		if err != nil {
-			return "", err
-		}
-		s.cache.Set(key, val)
-		return val, nil
-	})
-	if err != nil {
-		return "", err
-	}
-	return v.(string), nil
-}
+v, err, _ := g.Do(key, func() (any, error) {
+	return s.fetch(ctx, key)
+})
 ```
 
 今回進めている WAL の実装においては、`getIndex` では key=`wal-index`、`getEntry` では key=`[コンテンツハッシュ]` を指定して `g.Do` を呼ぶことで、S3 への GET リクエストの同時実行を束ねることができる。
