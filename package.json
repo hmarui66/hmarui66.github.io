@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.0.0",
-    "astro": "^5.18.1",
+    "@astrojs/mdx": "^7.0.8",
+    "astro": "^7.2.9",
     "mermaid": "^11.16.1",
     "remark-github-alerts": "^0.1.1",
     "typescript": "^5.7.3",
