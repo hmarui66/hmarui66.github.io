@@ -1,9 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '../utils/posts';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 
-const allPosts = await getCollection('posts');
+const allPosts = await getPublishedPosts();
 const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
@@ -16,7 +16,7 @@ const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.
       sortedPosts.map((post) => (
         <PostCard
           title={post.data.title}
-          slug={post.slug}
+          slug={post.id}
           date={post.data.date}
           description={post.data.description}
           tags={post.data.tags}
