@@ -16,7 +16,7 @@ const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.
       sortedPosts.map((post) => (
         <PostCard
           title={post.data.title}
-          slug={post.slug}
+          slug={post.id}
           date={post.data.date}
           description={post.data.description}
           tags={post.data.tags}

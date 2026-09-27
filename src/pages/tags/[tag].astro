@@ -45,7 +45,7 @@ const { tag, posts } = Astro.props;
       {posts.map((post) => (
         <PostCard
           title={post.data.title}
-          slug={post.slug}
+          slug={post.id}
           date={post.data.date}
           description={post.data.description}
           tags={post.data.tags}
