@@ -27,6 +27,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          # ランナーにキャッシュされた古い 22.x ではなく最新の 22.x を使う（Astro が要求する最小パッチ版を満たすため）
+          check-latest: true
 
       - name: Install dependencies
         run: npm ci
